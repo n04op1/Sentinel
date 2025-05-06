@@ -1,2 +1,2 @@
 # Sentinel
-English version of the project
+English version of the project.
