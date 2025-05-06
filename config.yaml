@@ -1,0 +1,45 @@
+# config.yaml - Configuration for Hue Motion Sensor Logger
+
+bridge_ip: 192.168.1.14
+username: eznV6-Ueq4POQtkeufaMqNt5DUjqxNrcThnJzirr
+poll_interval: 3  # in seconds
+log_folder: logs
+
+sensors:
+  - id: 2
+    name: Hallway - motion
+  - id: 3
+    name: Hallway - brightness
+  - id: 4
+    name: Hallway - temperature
+  - id: 5
+    name: Kitchen - motion
+  - id: 6
+    name: Kitchen - brightness
+  - id: 7
+    name: Kitchen - temperature
+  - id: 8
+    name: Living Room - motion
+  - id: 9
+    name: Living Room - brightness
+  - id: 10
+    name: Living Room - temperature
+  - id: 11
+    name: Bathroom - motion
+  - id: 12
+    name: Bathroom - brightness
+  - id: 13
+    name: Bathroom - temperature
+  - id: 14
+    name: Bedroom - motion
+  - id: 15
+    name: Bedroom - brightness
+  - id: 16
+    name: Bedroom - temperature
+  - id: 17
+    name: Inner Hallway - motion
+  - id: 18
+    name: Inner Hallway - brightness
+  - id: 19
+    name: Inner Hallway - temperature
+

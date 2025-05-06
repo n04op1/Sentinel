@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Monitor</title>
+    <meta charset="UTF-8">
+    <script>
+        async function fetchStatus() {
+            const res = await fetch('/status');
+            const data = await res.json();
+
+            for (const [svc, info] of Object.entries(data.services)) {
+                document.getElementById(`${svc}-status`).innerText = info.status;
+                document.getElementById(`${svc}-enabled`).innerText = info.enabled;
+                document.getElementById(`${svc}-log`).innerText = info.log;
+            }
+
+            document.getElementById("bridge-status").style.background = data.bridge ? "green" : "red";
+        }
+
+        async function sendAction(service, action) {
+            await fetch('/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ service, action })
+            });
+            setTimeout(fetchStatus, 1000);
+        }
+
+        setInterval(fetchStatus, 5000);
+        window.onload = fetchStatus;
+    </script>
+</head>
+<body>
+    <h1>Smart Sensor System Monitor</h1>
+    <b>Bridge:</b> <span id="bridge-status" style="width:20px;height:20px;display:inline-block;border-radius:50%;background:gray;"></span>
+
+    <hr/>
+
+    {% for svc in ["poller", "monitor", "dashboard"] %}
+    <div style="margin-top:20px;">
+        <h2>{{ svc|capitalize }} Service</h2>
+        <b>Status:</b> <span id="{{ svc }}-status"></span> <br/>
+        <b>Enabled on Boot:</b> <span id="{{ svc }}-enabled"></span>
+
+        <div style="margin-top:10px;">
+            <button onclick="sendAction('{{ svc }}', 'start')">Start</button>
+            <button onclick="sendAction('{{ svc }}', 'stop')">Stop</button>
+            <button onclick="sendAction('{{ svc }}', 'restart')">Restart</button>
+        </div>
+
+        <h4>Live Log</h4>
+        <pre id="{{ svc }}-log" style="background:#eee; padding:10px; height:200px; overflow:auto;"></pre>
+    </div>
+    <hr/>
+    {% endfor %}
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Room Sensor Data Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
+    .chart-container {
+      margin-bottom: 40px; background: white; padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 8px;
+    }
+    .controls { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Room Sensor Data Dashboard</h1>
+  <div class="controls">
+    <label for="bucket">Bucket Size:</label>
+    <select id="bucket">
+      <option value="1">1 min</option>
+      <option value="5" selected>5 min</option>
+      <option value="15">15 min</option>
+      <option value="30">30 min</option>
+      <option value="60">60 min</option>
+    </select>
+    <label for="date">Select Date:</label>
+    <input type="date" id="date">
+    <button onclick="loadData()">Load</button>
+  </div>
+  <div id="charts"></div>
+  <script>
+    let refreshTimer;
+    async function loadData() {
+      clearTimeout(refreshTimer);
+      const bucket = document.getElementById("bucket").value;
+      const date = document.getElementById("date").value || new Date().toISOString().slice(0,10);
+      const response = await fetch(`/data?bucket=${bucket}&date=${date}`);
+      const sensorData = await response.json();
+      renderCharts(sensorData);
+      refreshTimer = setTimeout(loadData, bucket * 60000);
+    }
+    function renderCharts(data) {
+      const container = document.getElementById("charts");
+      container.innerHTML = "";
+      Object.entries(data).forEach(([room, entry]) => {
+        if (!entry.timestamps) return;
+        const canvas = document.createElement("canvas");
+        const wrapper = document.createElement("div");
+        wrapper.className = "chart-container";
+        const title = document.createElement("h2");
+        title.innerText = room;
+        wrapper.appendChild(title);
+        wrapper.appendChild(canvas);
+        container.appendChild(wrapper);
+        new Chart(canvas.getContext("2d"), {
+          type: "bar",
+          data: {
+            labels: entry.timestamps,
+            datasets: [
+              {
+                type: "line",
+                label: "🌡 Temperature (°C)",
+                data: entry.temperature,
+                borderColor: "red",
+                backgroundColor: "rgba(255,0,0,0.1)",
+                yAxisID: "y1"
+              },
+              {
+                type: "line",
+                label: "💡 Brightness",
+                data: entry.brightness,
+                borderColor: "orange",
+                backgroundColor: "rgba(255,165,0,0.1)",
+                yAxisID: "y2"
+              },
+              {
+                type: "bar",
+                label: "👣 Motion Events",
+                data: entry.motion,
+                backgroundColor: "rgba(0, 123, 255, 0.6)",
+                borderWidth: 1,
+                borderColor: "blue",
+                yAxisID: "y3"
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            interaction: { mode: "index", intersect: false },
+            stacked: false,
+            scales: {
+              y1: {
+                type: "linear",
+                position: "left",
+                title: { display: true, text: "🌡 Temperature (°C)" },
+                ticks: { color: "red" }
+              },
+              y2: {
+                type: "linear",
+                position: "right",
+                offset: true,
+                title: { display: true, text: "💡 Brightness" },
+                ticks: { color: "orange" },
+                grid: { drawOnChartArea: false }
+              },
+              y3: {
+                type: "linear",
+                position: "right",
+                title: { display: true, text: "👣 Motion Count" },
+                ticks: { color: "blue" },
+                grid: { drawOnChartArea: false }
+              }
+            }
+          }
+        });
+      });
+    }
+    window.onload = () => {
+      document.getElementById("date").value = new Date().toISOString().slice(0,10);
+      loadData();
+    };
+  </script>
+</body>
+</html>
